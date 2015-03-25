@@ -1,0 +1,3 @@
+#!/bin/bash
+cp -avr ~/scripts/rtorrentflow/rtorrentflow.php /usr/local/bin/
+cp -avr ~/scripts/rtorrentflow/lib/* /usr/share/php5/rtorrentflow/
