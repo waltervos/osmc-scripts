@@ -1,0 +1,160 @@
+# This is an example resource file for rTorrent. Copy to
+# ~/.rtorrent.rc and enable/modify the options as needed. Remember to
+# uncomment the options you wish to enable.
+
+# Maximum and minimum number of peers to connect to per torrent.
+#min_peers = 40
+max_peers = 136
+
+# Same as above but for seeding completed torrents (-1 = same as downloading)
+#min_peers_seed = 10
+#max_peers_seed = 50
+
+# Maximum number of simultaneous uploads per torrent.
+max_uploads = 12
+
+# Global upload and download rate in KiB. "0" for unlimited.
+download_rate = 0
+upload_rate = 600
+
+# Default directory to save the downloaded torrents.
+directory = /home/pi/temp
+
+# Default session directory. Make sure you don't run multiple instance
+# of rtorrent using the same session directory. Perhaps using a
+# relative path?
+session = /home/pi/session
+
+# Custom method to copy the torrent data from base_path to the value set in custom2
+system.method.insert = copy_to_custom2,simple,"execute=cp,-avr,$d.get_base_path=,$d.get_custom2="
+
+# Custom method to move the torrent data from base_path to the value set in custom1 and change the directory accordingly
+system.method.insert = move_to_custom1,simple,"d.set_directory=$d.get_custom1=;execute=mv,-u,$d.get_base_path=,$d.get_custom1="
+
+# On completion, copy the data to custom2 (if set) and move the torrent to the directory from custom1
+#system.method.set_key =event.download.finished,move_copy_complete,"branch=d.get_custom2=,copy_to_custom2= ;move_to_custom1="
+
+# Old move to custom1 rule
+system.method.set_key =event.download.finished,move_complete,"d.set_directory=$d.get_custom1= ;execute=mv,-u,$d.get_base_path=,$d.get_custom1="
+
+# Store time when torrent is loaded into rTorrent in a custome field
+system.method.set_key = event.download.inserted_new, loaded_time, "d.set_custom=tm_loaded,$cat=$system.time="
+
+# Stop torrents whose .torrent file have been deleted
+schedule = untied_directory,5,5,stop_untied=
+
+# Close torrents when diskspace is low.
+#schedule = low_diskspace,5,60,close_low_diskspace=100M
+
+# The ip address reported to the tracker.
+#ip = 127.0.0.1
+#ip = rakshasa.no
+
+# The ip address the listening socket and outgoing connections is
+# bound to.
+#bind = 127.0.0.1
+#bind = rakshasa.no
+
+# Port range to use for listening.
+port_range = 6500-6598
+
+# Start opening ports at a random position within the port range.
+#port_random = no
+
+# Check hash for finished torrents. Might be usefull until the bug is
+# fixed that causes lack of diskspace not to be properly reported.
+#check_hash = no
+
+# Set whetever the client should try to connect to UDP trackers.
+use_udp_trackers = yes
+
+# Alternative calls to bind and ip that should handle dynamic ip's.
+#schedule = ip_tick,0,1800,ip=rakshasa
+#schedule = bind_tick,0,1800,bind=rakshasa
+
+# Encryption options, set to none (default) or any combination of the following:
+# allow_incoming, try_outgoing, require, require_RC4, enable_retry, prefer_plaintext
+#
+# The example value allows incoming encrypted connections, starts unencrypted
+# outgoing connections but retries with encryption if they fail, preferring
+# plaintext to RC4 encryption after the encrypted handshake
+encryption = allow_incoming,try_outgoing,enable_retry,prefer_plaintext
+
+# Enable DHT support for trackerless torrents or when all trackers are down.
+# May be set to "disable" (completely disable DHT), "off" (do not start DHT),
+# "auto" (start and stop DHT as needed), or "on" (start DHT immediately).
+# The default is "off". For DHT to work, a session directory must be defined.
+dht = auto
+
+# UDP port to use for DHT. 
+dht_port = 6599
+
+# Enable peer exchange (for torrents not marked private)
+#
+peer_exchange = yes
+
+#
+# Do not modify the following parameters unless you know what you're doing.
+#
+
+# Hash read-ahead controls how many MB to request the kernel to read
+# ahead. If the value is too low the disk may not be fully utilized,
+# while if too high the kernel might not be able to keep the read
+# pages in memory thus end up trashing.
+#hash_read_ahead = 10
+
+# Interval between attempts to check the hash, in milliseconds.
+#hash_interval = 100
+
+# Number of attempts to check the hash while using the mincore status,
+# before forcing. Overworked systems might need lower values to get a
+# decent hash checking rate.
+#hash_max_tries = 10
+
+# SCGI Port
+scgi_local = /home/pi/.run/rtorrent.socket
+
+# Trottles
+throttle_up=public_up,1
+throttle_up=private_up,0
+
+# Views
+view_add = regular_view
+view.persistent = regular_view
+group.insert = regular, regular_view
+
+view_add = setratio_view
+view.persistent = setratio_view
+group.insert = setratio, setratio_view
+
+# Sort the setratio view by ratio
+view.sort_current = setratio_view,greater=d.get_ratio=
+view.sort_new = setratio_view,less=d.get_ratio=
+view.sort = setratio_view
+
+# Sort the main view by local id
+view.sort_current = main,less=d.get_custom=tm_loaded
+view.sort_new = main,less=d.get_custom=tm_loaded
+view.sort = main
+ 
+# Sort the seeding view by the upload rate and only show torrents with peers
+view.sort_current = seeding,greater=d.get_up_rate=
+view.filter = seeding,"and=d.get_complete=,d.get_peers_connected="
+view.sort_new = seeding,less=d.get_up_rate=
+view.sort = seeding
+ 
+schedule = sort_setratio_view,11,5,view.sort=setratio_view
+schedule = sort_main,12,5,view.sort=main
+schedule = sort_seeding,13,5,view.sort=seeding
+
+# Ratio
+group.setratio.ratio.enable=
+group.setratio.ratio.upload.set=5M
+group.setratio.ratio.min.set=105
+group.setratio.ratio.max.set=106
+
+# Custom method to log the erasing of sufficiently seed torrents
+#system.method.insert = log_closed_seeded,simple,"execute=echo,date,+\"%d-%m-%Y %H:%M:%S\",d.get_tied_to_file=,stopped,and,erased,>>,/home/pi/rtorrentflow.log"
+
+# Close and erase torrents in setratio group when ratio is reached
+system.method.set = group.setratio.ratio.command, d.close=, d.erase=
