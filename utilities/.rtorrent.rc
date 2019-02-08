@@ -15,15 +15,15 @@ max_uploads = 12
 
 # Global upload and download rate in KiB. "0" for unlimited.
 download_rate = 0
-upload_rate = 600
+upload_rate = 800
 
 # Default directory to save the downloaded torrents.
-directory = /home/pi/temp
+directory = /home/osmc/Temp
 
 # Default session directory. Make sure you don't run multiple instance
 # of rtorrent using the same session directory. Perhaps using a
 # relative path?
-session = /home/pi/session
+session = /home/osmc/.session
 
 # Custom method to copy the torrent data from base_path to the value set in custom2
 system.method.insert = copy_to_custom2,simple,"execute=cp,-avr,$d.get_base_path=,$d.get_custom2="
@@ -37,11 +37,11 @@ system.method.insert = move_to_custom1,simple,"d.set_directory=$d.get_custom1=;e
 # Old move to custom1 rule
 system.method.set_key =event.download.finished,move_complete,"d.set_directory=$d.get_custom1= ;execute=mv,-u,$d.get_base_path=,$d.get_custom1="
 
-# Store time when torrent is loaded into rTorrent in a custome field
+# Store time when torrent is loaded into rTorrent in a custom field
 system.method.set_key = event.download.inserted_new, loaded_time, "d.set_custom=tm_loaded,$cat=$system.time="
 
 # Stop torrents whose .torrent file have been deleted
-schedule = untied_directory,5,5,stop_untied=
+schedule = untied_directory,5,5,remove_untied=
 
 # Close torrents when diskspace is low.
 #schedule = low_diskspace,5,60,close_low_diskspace=100M
@@ -65,7 +65,7 @@ port_range = 6500-6598
 # fixed that causes lack of diskspace not to be properly reported.
 #check_hash = no
 
-# Set whetever the client should try to connect to UDP trackers.
+# Set whether the client should try to connect to UDP trackers.
 use_udp_trackers = yes
 
 # Alternative calls to bind and ip that should handle dynamic ip's.
@@ -112,7 +112,7 @@ peer_exchange = yes
 #hash_max_tries = 10
 
 # SCGI Port
-scgi_local = /home/pi/.run/rtorrent.socket
+scgi_local = /home/osmc/.run/rtorrent.socket
 
 # Trottles
 throttle_up=public_up,1
@@ -154,7 +154,12 @@ group.setratio.ratio.min.set=105
 group.setratio.ratio.max.set=106
 
 # Custom method to log the erasing of sufficiently seed torrents
-#system.method.insert = log_closed_seeded,simple,"execute=echo,date,+\"%d-%m-%Y %H:%M:%S\",d.get_tied_to_file=,stopped,and,erased,>>,/home/pi/rtorrentflow.log"
+#system.method.insert = log_closed_seeded,simple,"execute=echo,date,+\"%d-%m-%Y %H:%M:%S\",d.get_tied_to_file=,stopped,and,erased,>>,/home/osmc/rtorrentflow.log"
 
 # Close and erase torrents in setratio group when ratio is reached
 system.method.set = group.setratio.ratio.command, d.close=, d.erase=
+
+# Force rtorrent to use the UTF-8 encoding
+encoding_list = UTF-8
+
+schedule = scgi_permission,0,0,"execute.nothrow=chmod,\"g+w,o=\",/home/osmc/.run/rtorrent.socket"
