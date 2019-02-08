@@ -1,18 +1,8 @@
 <?php
-/*
- * rtorrentflow controls the queue in rtorrent
- * Copyright (C) 2012  Walter Vos
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+/**
+ * Description of RtorrentManager
+ *
+ * @author waltervos
  */
 
 class RtorrentManager {
@@ -25,17 +15,17 @@ class RtorrentManager {
     private $max_active = 12;
 
     // What is the root directory for torrent files?
-    private $torrent_root = '/home/pi/torrents';
+    private $torrent_root = '/home/osmc/Torrents';
 
     // What is the root directory to move completed downloads to?
-    private $completed_root = '/home/pi/';
+    private $completed_root = '/home/osmc/';
 
     private $copy_paths = array(
         'downloads/whatcd' => 'muziek/'
     );
 
     // What is the location of the rtorrent unix socket?
-    private $unix_socket = '/home/pi/.run/rtorrent.socket';
+    private $unix_socket = '/home/osmc/.run/rtorrent.socket';
     
     private $load_method = 'load_start';
 
@@ -139,7 +129,7 @@ class RtorrentManager {
     private function getView($torrent) {
         $view = 'regular_view';
         foreach ($torrent['announce'] as $announce) {
-            if (strpos($announce, 'torrentday') || strpos($announce, 'iptorrents') || strpos($announce, 'td.jumbohostpro')) {
+            if (strpos($announce, 'torrentday') || strpos($announce, 'iptorrents') || strpos($announce, 'td.jumbohostpro') || strpos($announce, 'empornium')) {
                 $view = 'setratio_view';
             }
         }

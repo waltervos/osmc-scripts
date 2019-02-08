@@ -31,6 +31,3 @@
 
 # Twice an hour from 11-21
 8/30 11-21 * * * /usr/local/bin/flexget execute --cron --tasks torrentday
-
-# Once an hour on Friday from 6-12
-4 6-12 * * 5 /usr/local/bin/flexget execute --cron --tasks widm

@@ -1,2 +1,2 @@
 #!/bin/bash
-cd ~/torrents && ls -alR | grep .torrent
+cd /home/osmc/Torrents/ && ls -altR | grep .torrent
