@@ -13,7 +13,7 @@ class RtorrentClient {
         $this->scgi_client = new ScgiXmlRpcClient($scgi_socket);
         $this->load_method = $load_method;
     }
-    
+
     private function rTorrentRequest($method, $params, $return = 'content') {
         $request = xmlrpc_encode_request($method, $params);
         $response = $this->scgi_client->doXmlRpc($request);
@@ -32,27 +32,11 @@ class RtorrentClient {
     }
 
     public function getTorrent($hash) {
-        $response = $this->rTorrentRequest('d.get_name', array($hash));
-        if (isset($response['faultCode'])) {
-            if ($response['faultCode'] == "-501") {
-                return false;
-            }
-            exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
-        } else {
-            return $response;
-        }
+        return $this->rTorrentRequest('d.get_name', array($hash));
     }
 
     public function setTorrentAttribute($hash, $attribute, $value) {
-        $response = $this->rTorrentRequest("d.$attribute.set", array($hash, $value));
-        if (isset($response['faultCode'])) {
-            if ($response['faultCode'] == "-501") {
-                return false;
-            }
-            exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
-        } else {
-            return $response;
-        }
+        return $this->rTorrentRequest("d.$attribute.set", array($hash, $value), 'bool');
     }
 
     public function getTorrents($view) {
@@ -67,39 +51,15 @@ class RtorrentClient {
     }
 
     public function closeTorrent($hash) {
-        $response = $this->rTorrentRequest('d.stop', array($hash));
-        if (isset($response['faultCode'])) {
-            if ($response['faultCode'] == "-501") {
-                return false;
-            }
-            exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
-        } else {
-            return $response;
-        }
+        return $this->rTorrentRequest('d.stop', array($hash), 'bool');
     }
 
     public function pauseTorrent($hash) {
-        $response = $this->rTorrentRequest('d.pause', array($hash));
-        if (isset($response['faultCode'])) {
-            if ($response['faultCode'] == "-501") {
-                return false;
-            }
-            exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
-        } else {
-            return $response;
-        }
+        return $this->rTorrentRequest('d.pause', array($hash), 'bool');
     }
 
     public function resumeTorrent($hash) {
-        $response = $this->rTorrentRequest('d.resume', array($hash));
-        if (isset($response['faultCode'])) {
-            if ($response['faultCode'] == "-501") {
-                return false;
-            }
-            exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
-        } else {
-            return $response;
-        }
+        return $this->rTorrentRequest('d.resume', array($hash), 'bool');
     }
 
 
