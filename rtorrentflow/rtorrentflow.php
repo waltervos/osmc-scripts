@@ -72,6 +72,7 @@ foreach ($args as $arg) {
 }
 $rtorrent_manager->closeCompletedTorrents($erase);
 $rtorrent_manager->runQueueManager();
+$rtorrent_manager->throttleActiveTorrents();
 
 if ($loglevel != 'quiet') {
     Log::printMessages($loglevel);

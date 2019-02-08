@@ -43,8 +43,20 @@ class RtorrentClient {
         }
     }
 
+    public function setTorrentAttribute($hash, $attribute, $value) {
+        $response = $this->rTorrentRequest("d.$attribute.set", array($hash, $value));
+        if (isset($response['faultCode'])) {
+            if ($response['faultCode'] == "-501") {
+                return false;
+            }
+            exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
+        } else {
+            return $response;
+        }
+    }
+
     public function getTorrents($view) {
-        $calls = array('d.get_hash=', 'd.get_tied_to_file=', 'd.get_custom1=', 'd.get_custom2=', 'd.get_throttle_name=');
+        $calls = array('d.get_hash=', 'd.get_tied_to_file=', 'd.get_custom1=', 'd.get_custom2=', 'd.get_throttle_name=', 'd.is_private=', 'd.get_base_path=');
         $args = array_merge((array) $view, $calls);
         $response = $this->rTorrentRequest('d.multicall', $args);
         if (isset($response['faultCode'])) {
@@ -65,6 +77,31 @@ class RtorrentClient {
             return $response;
         }
     }
+
+    public function pauseTorrent($hash) {
+        $response = $this->rTorrentRequest('d.pause', array($hash));
+        if (isset($response['faultCode'])) {
+            if ($response['faultCode'] == "-501") {
+                return false;
+            }
+            exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
+        } else {
+            return $response;
+        }
+    }
+
+    public function resumeTorrent($hash) {
+        $response = $this->rTorrentRequest('d.resume', array($hash));
+        if (isset($response['faultCode'])) {
+            if ($response['faultCode'] == "-501") {
+                return false;
+            }
+            exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
+        } else {
+            return $response;
+        }
+    }
+
 
     public function deleteTorrent($hash) {
         $response = $this->rTorrentRequest('d.erase', array($hash));
@@ -90,6 +127,13 @@ class RtorrentClient {
             }
         }
         return $return;
+    }
+
+    public function arrayToString(array $array) {
+        foreach($array as $key => $value) {
+            $array[$key] = str_replace(' ', '\ ', $value);
+        }
+        return $array;
     }
 
     public function loadTorrent($file, $calls) {

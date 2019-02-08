@@ -126,6 +126,20 @@ class RtorrentManager {
         }
     }
 
+    public function throttleActiveTorrents() {
+        foreach ($this->getActiveTorrents() as $active_torrent) {
+            if (substr($active_torrent['base_path'], -4) === 'meta') {
+                continue;
+            }
+            if (empty($active_torrent['throttle_name'])) {
+                $throttle = ($active_torrent['d.is_private'] === 1) ? 'private_up' : 'public_up';
+                $this->rtorrent_client->pauseTorrent($active_torrent['hash']);
+                $this->rtorrent_client->setTorrentAttribute($active_torrent['hash'], 'throttle_name', $throttle);
+                $this->rtorrent_client->resumeTorrent($active_torrent['hash']);
+            }
+        }
+    }
+
     private function getView($torrent) {
         $view = 'regular_view';
         foreach ($torrent['announce'] as $announce) {
@@ -171,6 +185,7 @@ class RtorrentManager {
         return true;
     }
 
+    // Determines how many new torrents can be added
     private function getQueueBudget() {
         return $this->max_leeching - count($this->leeching_torrents);
     }
@@ -186,7 +201,7 @@ class RtorrentManager {
             $this->loaded_torrents = $this->rtorrent_client->getTorrents('main');
         }
     }
-    
+
     private function setCompletedTorrents() {
         if (!$this->completed_torrents) {
             // Completed torrents are found in the 'complete' view and not in the 'hashing' view
@@ -206,6 +221,11 @@ class RtorrentManager {
         if (!$this->active_torrents) {
             $this->active_torrents = $this->rtorrent_client->getTorrents('active');
         }
+    }
+
+    private function getActiveTorrents() {
+        $this->setActiveTorrents();
+        return $this->active_torrents;
     }
 
     private function setTorrentFiles() {
@@ -249,17 +269,9 @@ class RtorrentManager {
         // If info hash is not available for comparison, use torrent filename
         if ($reference['hash'] === '') {
             Log::addMessage('Hash not available for ' . $reference['tied_to_file'], 'debug');
-            if ($reference['tied_to_file'] === $subject['tied_to_file']) {
-                Log::addMessage('Torrent matches loaded torrent ' . $reference['tied_to_file'] . ' based on filename', 'debug');
-                return 0;
-            }
-            // Hash is unavailable and torrent filenames don't match. Return:
-            return ($reference['tied_to_file'] < $subject['tied_to_file']) ? -1 : 1;
+            return ($reference['tied_to_file'] === $subject['tied_to_file']) ? 0 : 1;
         }
-        if ($reference['hash'] === $subject['hash']) {
-            return 0;
-        }
-        return ($reference['hash'] < $subject['hash']) ? -1 : 1;
+        return ($reference['hash'] === $subject['hash']) ? 0 : 1;
     }
 }
 ?>
