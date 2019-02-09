@@ -7,6 +7,7 @@
 
 class RtorrentManager {
     private $rtorrent_client;
+    private $sonarr_client;
     
     // How many torrents to download simultaneously? false = unlimited (not recommended)
     private $max_leeching = 1;
@@ -64,15 +65,20 @@ class RtorrentManager {
     
     public function setDestinationOnSonarrTorrents() {
         if (is_null($this->rtorrent_client)) $this->rtorrent_client = new RtorrentClient($this->unix_socket, $this->load_method);
-        foreach ($this->getActiveTorrents() as $active_torrent) {
-            print_r($active_torrent);
-            if (substr($active_torrent['base_path'], -4) === 'meta') {
+        if (is_null($this->sonarr_client)) $this->sonarr_client = new SonarrClient();
+        $this->sonarr_client->setApiKey('771f8491c4474cd4b7bf1a5b0861963e');
+        foreach ($this->getLeechingTorrents() as $leeching_torrent) {
+            if (substr($leeching_torrent['base_path'], -4) === 'meta') {
                 // Torrents that have a [hash].meta base_path are magnets that haven't downloaded metadata yet. We'll leave those be.
-                Log::addMessage($active_torrent['base_path'] . ' hasn\'t downloaded metadata yet. Not considering for setting custom2 value', 'debug');
+                Log::addMessage($leeching_torrent['tied_to_file'] . ' hasn\'t downloaded metadata yet. Skipping in setDestinationOnSonarrTorrents', 'debug');
                 continue;
             }
-            if (empty($active_torrent['custom2']) && $active_torrent['custom1'] == 'tv-sonarr') {
-                print_r($active_torrent);
+            if ($leeching_torrent['d.custom1'] == 'tv-sonarr') {
+                $path = $this->sonarr_client->getDestinationForTorrent($leeching_torrent['hash']);
+                if ($path && ($leeching_torrent['d.custom2'] != $path)) {
+                    Log::addMessage('Setting destination for ' . $leeching_torrent['tied_to_file'] . ' as ' . $path, 'debug');
+                    $this->rtorrent_client->setTorrentAttribute($leeching_torrent['hash'], 'custom2', $path);
+                }
             }
         }
     }
@@ -111,7 +117,7 @@ class RtorrentManager {
             // How many new torrents can we load?
             $queue_budget = $this->getQueueBudget();
             Log::addMessage($queue_budget . ' new torrents can be queued', 'debug');
-        
+
             // Load the queued torrents, until queueBudget is spent
             $i = 0;
             foreach ($this->queued_torrents as $queued_torrent) {
@@ -211,6 +217,11 @@ class RtorrentManager {
             $this->leeching_torrents = $this->rtorrent_client->getTorrents('leeching');
         }
     }
+    
+    private function getLeechingTorrents() {
+        $this->setLeechingTorrents();
+        return $this->leeching_torrents;
+    }
 
     private function setLoadedTorrents() {
         if (!$this->loaded_torrents) {
@@ -285,9 +296,18 @@ class RtorrentManager {
         // If info hash is not available for comparison, use torrent filename
         if ($reference['hash'] === '') {
             Log::addMessage('Hash not available for ' . $reference['tied_to_file'], 'debug');
-            return ($reference['tied_to_file'] === $subject['tied_to_file']) ? 0 : 1;
+            if ($reference['tied_to_file'] === $subject['tied_to_file']) {
+                Log::addMessage('Torrent matches loaded torrent ' . $reference['tied_to_file'] . ' based on filename', 'debug');
+                return 0;
+            }
+            // Hash is unavailable and torrent filenames don't match. Return:
+            return ($reference['tied_to_file'] < $subject['tied_to_file']) ? -1 : 1;
         }
-        return ($reference['hash'] === $subject['hash']) ? 0 : 1;
+        if ($reference['hash'] === $subject['hash']) {
+            return 0;
+        }
+        return ($reference['hash'] < $subject['hash']) ? -1 : 1;
     }
+
 }
 ?>
