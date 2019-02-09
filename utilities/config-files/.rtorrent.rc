@@ -26,19 +26,19 @@ directory = /home/osmc/Temp
 session = /home/osmc/.session
 
 # Custom method to copy the torrent data from base_path to the value set in custom3
-system.method.insert = copy_to_custom3,simple,"execute=cp,-avr,$d.get_base_path=,$d.get_custom3="
+system.method.insert = copy_to_custom3,simple,"execute=cp,-avr,$d.base_path=,$d.custom3="
 
 # Custom method to move the torrent data from base_path to the value set in custom2 and change the directory accordingly
-system.method.insert = move_to_custom2,simple,"d.set_directory=$d.get_custom2=;execute=mv,-u,$d.get_base_path=,$d.get_custom2="
+system.method.insert = move_to_custom2,simple,"d.directory.set=$d.custom2=;execute=mv,-u,$d.base_path=,$d.custom2="
 
 # On completion, copy the data to custom3 (if set) and move the torrent to the directory from custom2
-#system.method.set_key =event.download.finished,move_copy_complete,"branch=d.get_custom3=,copy_to_custom3= ;move_to_custom2="
+#system.method.set_key =event.download.finished,move_copy_complete,"branch=d.custom3=,copy_to_custom3= ;move_to_custom2="
 
 # Old move to custom2 rule
-system.method.set_key =event.download.finished,move_complete,"d.set_directory=$d.get_custom2= ;execute=mv,-u,$d.get_base_path=,$d.get_custom2="
+system.method.set_key =event.download.finished,move_complete,"d.directory.set=$d.custom2= ;execute=mv,-u,$d.base_path=,$d.custom2="
 
 # Store time when torrent is loaded into rTorrent in a custom field
-system.method.set_key = event.download.inserted_new, loaded_time, "d.set_custom=tm_loaded,$cat=$system.time="
+system.method.set_key = event.download.inserted_new, loaded_time, "d.custom.set=tm_loaded,$cat=$system.time="
 
 # Stop torrents whose .torrent file have been deleted
 schedule = untied_directory,5,5,remove_untied=
@@ -128,19 +128,19 @@ view.persistent = setratio_view
 group.insert = setratio, setratio_view
 
 # Sort the setratio view by ratio
-view.sort_current = setratio_view,greater=d.get_ratio=
-view.sort_new = setratio_view,less=d.get_ratio=
+view.sort_current = setratio_view,greater=d.ratio=
+view.sort_new = setratio_view,less=d.ratio=
 view.sort = setratio_view
 
 # Sort the main view by local id
-view.sort_current = main,less=d.get_custom=tm_loaded
-view.sort_new = main,less=d.get_custom=tm_loaded
+view.sort_current = main,less=d.custom=tm_loaded
+view.sort_new = main,less=d.custom=tm_loaded
 view.sort = main
  
 # Sort the seeding view by the upload rate and only show torrents with peers
-view.sort_current = seeding,greater=d.get_up_rate=
-view.filter = seeding,"and=d.get_complete=,d.get_peers_connected="
-view.sort_new = seeding,less=d.get_up_rate=
+view.sort_current = seeding,greater=d.up.rate=
+view.filter = seeding,"and=d.complete=,d.peers_connected="
+view.sort_new = seeding,less=d.up.rate=
 view.sort = seeding
  
 schedule = sort_setratio_view,11,5,view.sort=setratio_view
@@ -154,7 +154,7 @@ group.setratio.ratio.min.set=105
 group.setratio.ratio.max.set=106
 
 # Custom method to log the erasing of sufficiently seed torrents
-#system.method.insert = log_closed_seeded,simple,"execute=echo,date,+\"%d-%m-%Y %H:%M:%S\",d.get_tied_to_file=,stopped,and,erased,>>,/home/osmc/rtorrentflow.log"
+#system.method.insert = log_closed_seeded,simple,"execute=echo,date,+\"%d-%m-%Y %H:%M:%S\",d.tied_to_file=,stopped,and,erased,>>,/home/osmc/rtorrentflow.log"
 
 # Close and erase torrents in setratio group when ratio is reached
 system.method.set = group.setratio.ratio.command, d.close=, d.erase=
