@@ -61,6 +61,21 @@ class RtorrentManager {
     public function setLoadMethod($load_method) {
         $this->load_method = $load_method;
     }
+    
+    public function setDestinationOnSonarrTorrents() {
+        if (is_null($this->rtorrent_client)) $this->rtorrent_client = new RtorrentClient($this->unix_socket, $this->load_method);
+        foreach ($this->getActiveTorrents() as $active_torrent) {
+            print_r($active_torrent);
+            if (substr($active_torrent['base_path'], -4) === 'meta') {
+                // Torrents that have a [hash].meta base_path are magnets that haven't downloaded metadata yet. We'll leave those be.
+                Log::addMessage($active_torrent['base_path'] . ' hasn\'t downloaded metadata yet. Not considering for setting custom2 value', 'debug');
+                continue;
+            }
+            if (empty($active_torrent['custom2']) && $active_torrent['custom1'] == 'tv-sonarr') {
+                print_r($active_torrent);
+            }
+        }
+    }
 
     public function closeCompletedTorrents($erase = false) {
         if (is_null($this->rtorrent_client)) $this->rtorrent_client = new RtorrentClient($this->unix_socket, $this->load_method);
@@ -90,7 +105,6 @@ class RtorrentManager {
 
     public function runQueueManager() {
         if (is_null($this->rtorrent_client)) $this->rtorrent_client = new RtorrentClient($this->unix_socket, $this->load_method);
-        
         Log::addMessage('Running queue manager', 'debug');
         
         if ($this->canQueue() && $this->hasQueue()) {
@@ -106,16 +120,16 @@ class RtorrentManager {
                     break;
                  } else {
                     $throttle = ($queued_torrent['private']) ? 'private_up' : 'public_up';
-                    $custom1 = $this->completed_root . $queued_torrent['custom1'];
+                    $custom2 = $this->completed_root . $queued_torrent['custom2'];
                     $view = $this->getView($queued_torrent);
-                    if (!is_dir($custom1)) {
-                        $dir = mkdir($custom1, 0755);
+                    if (!is_dir($custom2)) {
+                        $dir = mkdir($custom2, 0755);
                         if (!$dir) {
-                            Log::addMessage('Creation of directory ' . $custom1 . ' failed', 'debug');
+                            Log::addMessage('Creation of directory ' . $custom2 . ' failed', 'debug');
                             break;
-                        } else Log::addMessage('Directory ' . $custom1 . ' created', 'debug');
+                        } else Log::addMessage('Directory ' . $custom2 . ' created', 'debug');
                     }
-                    if ($this->rtorrent_client->loadTorrent($queued_torrent['tied_to_file'], array('d.set_custom1=' . $custom1, 'd.set_custom2=' . $queued_torrent['custom2'], 'd.set_throttle_name=' . $throttle, 'view.set_visible=' . $view))) {
+                    if ($this->rtorrent_client->loadTorrent($queued_torrent['tied_to_file'], array('d.custom2.set=' . $custom2, 'd.custom3.set=' . $queued_torrent['custom3'], 'd.throttle_name.set=' . $throttle, 'view.set_visible=' . $view))) {
                         Log::addMessage("Torrent " . $queued_torrent['tied_to_file'] . " loaded.", 'info');
                         $i++;
                     } else {
@@ -129,6 +143,8 @@ class RtorrentManager {
     public function throttleActiveTorrents() {
         foreach ($this->getActiveTorrents() as $active_torrent) {
             if (substr($active_torrent['base_path'], -4) === 'meta') {
+                // Torrents that have a [hash].meta base_path are magnets that haven't downloaded metadata yet. We'll leave those be.
+                Log::addMessage($active_torrent['base_path'] . ' hasn\'t downloaded metadata yet. Not considering for setting throttle', 'debug');
                 continue;
             }
             if (empty($active_torrent['throttle_name'])) {
@@ -234,9 +250,9 @@ class RtorrentManager {
             while ($dir->valid()) {
                 if ($dir->isFile()) {
                     $torrent_data = PHP\BitTorrent\Torrent::createFromTorrentFile($dir->key());
-                    $custom1 = $dir->getSubPath();
-                    $custom2 = isset($this->copy_paths[$dir->getSubPath()]) ? $this->completed_root . $this->copy_paths[$dir->getSubPath()] : 0;
-                    Log::addMessage("custom2 for " . $dir->key() . " is $custom2", 'debug');
+                    $custom2 = $dir->getSubPath();
+                    $custom3 = isset($this->copy_paths[$dir->getSubPath()]) ? $this->completed_root . $this->copy_paths[$dir->getSubPath()] : 0;
+                    Log::addMessage("custom3 for " . $dir->key() . " is $custom3", 'debug');
                     $announce = array(0 => $torrent_data->getAnnounce());
                     $announce_list = $torrent_data->getAnnounceList();
                     if ($announce[0] == '' && is_array($announce_list)) {
@@ -250,8 +266,8 @@ class RtorrentManager {
                         'private' => $torrent_data->isPrivate(),
                         'announce' => $announce,
                         'tied_to_file' => $dir->key(),
-                        'custom1' => $custom1,
                         'custom2' => $custom2,
+                        'custom3' => $custom3,
                     );
                 }
                 $dir->next();

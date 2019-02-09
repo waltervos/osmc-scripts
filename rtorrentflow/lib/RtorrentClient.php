@@ -40,7 +40,7 @@ class RtorrentClient {
     }
 
     public function getTorrents($view) {
-        $calls = array('d.get_hash=', 'd.get_tied_to_file=', 'd.get_custom1=', 'd.get_custom2=', 'd.get_throttle_name=', 'd.is_private=', 'd.get_base_path=');
+        $calls = array('d.get_hash=', 'd.get_tied_to_file=', 'd.get_custom1=', 'd.get_custom2=', 'd.get_throttle_name=', 'd.is_private=', 'd.get_base_path=', 'd.custom1=', 'd.custom2=', 'd.custom3=');
         $args = array_merge((array) $view, $calls);
         $response = $this->rTorrentRequest('d.multicall', $args);
         if (isset($response['faultCode'])) {
