@@ -37,7 +37,8 @@ class RtorrentManager {
     private $completed_torrents = false;
     private $torrent_files = array();
     
-    public function __construct() {}
+    public function __construct() {
+    }
     
     public function setMaxLeeching($max_leeching) {
         $this->max_leeching = $max_leeching;
@@ -62,11 +63,15 @@ class RtorrentManager {
     public function setLoadMethod($load_method) {
         $this->load_method = $load_method;
     }
-    
-    public function setDestinationOnSonarrTorrents() {
-        if (is_null($this->rtorrent_client)) $this->rtorrent_client = new RtorrentClient($this->unix_socket, $this->load_method);
+
+    private function setClients() {
+        if (is_null($this->rtorrent_client)) $this->rtorrent_client = new RtorrentClient($this->unix_socket);
         if (is_null($this->sonarr_client)) $this->sonarr_client = new SonarrClient();
-        $this->sonarr_client->setApiKey('771f8491c4474cd4b7bf1a5b0861963e');
+    }
+    
+    public function setDestinationOnSonarrTorrents($api_key) {
+        $this->setClients();
+        $this->sonarr_client->setApiKey($api_key);
 
         foreach ($this->getLeechingTorrents() as $leeching_torrent) {
             if (substr($leeching_torrent['base_path'], -4) === 'meta') {
@@ -88,8 +93,8 @@ class RtorrentManager {
     }
 
     public function closeCompletedTorrents($erase = false) {
-        if (is_null($this->rtorrent_client)) $this->rtorrent_client = new RtorrentClient($this->unix_socket, $this->load_method);
-
+        $this->setClients();
+        
         // Loop through all completed torrents
         foreach ($this->getCompletedTorrents() as $completed_torrent) {
             // Torrents from private trackers will only be closed manually
@@ -111,7 +116,7 @@ class RtorrentManager {
     }
 
     public function runQueueManager() {
-        if (is_null($this->rtorrent_client)) $this->rtorrent_client = new RtorrentClient($this->unix_socket, $this->load_method);
+        $this->setClients();
         Log::addMessage('Running queue manager', 'debug');
         
         if ($this->canQueue() && $this->hasQueue()) {
@@ -127,7 +132,7 @@ class RtorrentManager {
                  } else {
                     $throttle = ($queued_torrent['private']) ? 'private_up' : 'public_up';
                     $custom2 = $this->completed_root . $queued_torrent['custom2'];
-                    $view = $this->getView($queued_torrent);
+                    $view = $this->getViewForTorrent($queued_torrent);
                     if (!is_dir($custom2)) {
                         $dir = mkdir($custom2, 0755);
                         if (!$dir) {
@@ -135,7 +140,15 @@ class RtorrentManager {
                             break;
                         } else Log::addMessage('Directory ' . $custom2 . ' created', 'debug');
                     }
-                    if ($this->rtorrent_client->loadTorrent($queued_torrent['tied_to_file'], array('d.custom2.set=' . $custom2, 'd.custom3.set=' . $queued_torrent['custom3'], 'd.throttle_name.set=' . $throttle, 'view.set_visible=' . $view))) {
+                    if ($this->rtorrent_client->loadTorrent(
+                            $queued_torrent['tied_to_file'],
+                            array(
+                                'd.custom2.set=' . $custom2,
+                                'd.custom3.set=' . $queued_torrent['custom3'],
+                                'd.throttle_name.set=' . $throttle,
+                                'view.set_visible=' . $view, $this->load_method
+                            )
+                        )) { // ... if($this->rtorrent_client->loadTorrent()):
                         Log::addMessage("Torrent " . $queued_torrent['tied_to_file'] . " loaded.", 'info');
                         $i++;
                     } else {
@@ -147,6 +160,7 @@ class RtorrentManager {
     }
 
     public function throttleActiveTorrents() {
+        $this->setClients();
         foreach ($this->getActiveTorrents() as $active_torrent) {
             if (substr($active_torrent['base_path'], -4) === 'meta') {
                 // Torrents that have a [hash].meta base_path are magnets that haven't downloaded metadata yet. We'll leave those be.
@@ -162,7 +176,7 @@ class RtorrentManager {
         }
     }
 
-    private function getView($torrent) {
+    private function getViewForTorrent($torrent) {
         $view = 'regular_view';
         foreach ($torrent['announce'] as $announce) {
             if (strpos($announce, 'torrentday') || strpos($announce, 'iptorrents') || strpos($announce, 'td.jumbohostpro') || strpos($announce, 'empornium')) {
@@ -296,7 +310,7 @@ class RtorrentManager {
     }
 
     private function getQueuedTorrents() {
-        if (!$queued_torrents) {
+        if (!$this->queued_torrents) {
             $this->setQueuedTorrents();
         }
         return $this->queued_torrents;

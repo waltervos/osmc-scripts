@@ -7,11 +7,9 @@
 class RtorrentClient {
     // Will hold an ScgiXmlRpcClient object
     private $scgi_client = false;
-    private $load_method;
 
-    public function __construct($scgi_socket, $load_method = 'load_start') {
+    public function __construct($scgi_socket) {
         $this->scgi_client = new ScgiXmlRpcClient($scgi_socket);
-        $this->load_method = $load_method;
     }
 
     private function rTorrentRequest($method, $params, $return = 'content') {
@@ -96,11 +94,11 @@ class RtorrentClient {
         return $array;
     }
 
-    public function loadTorrent($file, $calls) {
+    public function loadTorrent($file, $calls, $load_method) {
         foreach($calls as $key => $call) {
             $calls[$key] = str_replace(' ', '\ ', $call);
         }
-        $response = $this->rTorrentRequest($this->load_method, array_merge(array($file), $calls), 'bool');
+        $response = $this->rTorrentRequest($load_method, array_merge(array($file), $calls), 'bool');
         return $response;
     }
 }
