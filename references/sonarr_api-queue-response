@@ -1,0 +1,132 @@
+[
+  {
+    "series": {
+      "title": "Homeland",
+      "sortTitle": "homeland",
+      "seasonCount": 7,
+      "status": "continuing",
+      "overview": "A bipolar CIA operative becomes convinced a prisoner of war has been turned by al-Qaeda and is planning to carry out a terrorist attack on American soil.",
+      "network": "Showtime",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "fanart",
+          "url": "https://www.thetvdb.com/banners/fanart/original/247897-48.jpg"
+        },
+        {
+          "coverType": "banner",
+          "url": "https://www.thetvdb.com/banners/graphical/247897-g23.jpg"
+        },
+        {
+          "coverType": "poster",
+          "url": "https://www.thetvdb.com/banners/posters/247897-28.jpg"
+        }
+      ],
+      "seasons": [
+        {
+          "seasonNumber": 0,
+          "monitored": false
+        },
+        {
+          "seasonNumber": 1,
+          "monitored": false
+        },
+        {
+          "seasonNumber": 2,
+          "monitored": false
+        },
+        {
+          "seasonNumber": 3,
+          "monitored": false
+        },
+        {
+          "seasonNumber": 4,
+          "monitored": false
+        },
+        {
+          "seasonNumber": 5,
+          "monitored": false
+        },
+        {
+          "seasonNumber": 6,
+          "monitored": false
+        },
+        {
+          "seasonNumber": 7,
+          "monitored": true
+        }
+      ],
+      "year": 2011,
+      "path": "/home/osmc/TV Shows/Homeland",
+      "profileId": 6,
+      "languageProfileId": 1,
+      "seasonFolder": false,
+      "monitored": true,
+      "useSceneNumbering": false,
+      "runtime": 55,
+      "tvdbId": 247897,
+      "tvRageId": 27811,
+      "tvMazeId": 7,
+      "firstAired": "2011-10-01T22:00:00Z",
+      "lastInfoSync": "2019-02-08T07:52:44.927597Z",
+      "seriesType": "standard",
+      "cleanTitle": "homeland",
+      "imdbId": "tt1796960",
+      "titleSlug": "homeland",
+      "certification": "TV-MA",
+      "genres": [
+        "Action",
+        "Crime",
+        "Drama",
+        "Mystery"
+      ],
+      "tags": [],
+      "added": "2019-02-04T18:20:58.230509Z",
+      "ratings": {
+        "votes": 299,
+        "value": 8.3
+      },
+      "qualityProfileId": 6,
+      "id": 28
+    },
+    "episode": {
+      "seriesId": 28,
+      "episodeFileId": 0,
+      "seasonNumber": 7,
+      "episodeNumber": 12,
+      "title": "Paean to the People",
+      "airDate": "2018-04-29",
+      "airDateUtc": "2018-04-30T01:00:00Z",
+      "overview": "Carrie and Saul's mission doesn't go as planned. Elizabeth Keane fights for her presidency. Season finale.",
+      "hasFile": false,
+      "monitored": false,
+      "absoluteEpisodeNumber": 84,
+      "unverifiedSceneNumbering": false,
+      "lastSearchTime": "2019-02-08T14:23:01.682225Z",
+      "id": 1585
+    },
+    "quality": {
+      "quality": {
+        "id": 3,
+        "name": "WEBDL-1080p",
+        "source": "web",
+        "resolution": 1080
+      },
+      "revision": {
+        "version": 1,
+        "real": 0
+      }
+    },
+    "size": 4142700205.0,
+    "title": "Homeland.S07E12.1080p.WEB.H264-DEFLATE[rarbg]",
+    "sizeleft": 3934033581.0,
+    "timeleft": "00:00:00",
+    "estimatedCompletionTime": "2019-02-08T14:33:18.11316Z",
+    "status": "Downloading",
+    "trackedDownloadStatus": "Ok",
+    "statusMessages": [],
+    "downloadId": "C1A4C3D264E1519874CF9921FD5049B8BAB66F37",
+    "protocol": "torrent",
+    "id": 1014896156
+  }
+][]

@@ -2,6 +2,7 @@
 <?php
 require 'rtorrentflow/ScgiXmlRpcClient.php';
 require 'rtorrentflow/RtorrentClient.php';
+require 'rtorrentflow/SonarrClient.php';
 require 'rtorrentflow/RtorrentManager.php';
 require 'rtorrentflow/Log.php';
 
@@ -73,6 +74,7 @@ foreach ($args as $arg) {
 $rtorrent_manager->closeCompletedTorrents($erase);
 $rtorrent_manager->runQueueManager();
 $rtorrent_manager->throttleActiveTorrents();
+$rtorrent_manager->setDestinationOnSonarrTorrents('771f8491c4474cd4b7bf1a5b0861963e');
 
 if ($loglevel != 'quiet') {
     Log::printMessages($loglevel);
