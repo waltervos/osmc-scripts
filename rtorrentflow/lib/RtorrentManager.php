@@ -212,7 +212,6 @@ class RtorrentManager {
             );
             foreach ($this->completed_torrents as $key => $completed_torrent) {
                 $torrent = PHP\BitTorrent\Torrent::createFromTorrentFile($completed_torrent['tied_to_file']);
-                $this->completed_torrents[$key]['private'] = $torrent->isPrivate(); // Why do we need this?
             }
         }
     }
@@ -236,7 +235,7 @@ class RtorrentManager {
                     $torrent_data = PHP\BitTorrent\Torrent::createFromTorrentFile($dir->key());
                     $custom1 = $dir->getSubPath();
                     $custom2 = isset($this->copy_paths[$dir->getSubPath()]) ? $this->completed_root . $this->copy_paths[$dir->getSubPath()] : 0;
-                    Log::addMessage("custom2 for " . $dir->key() . " is $custom2", 'debug');
+                    Log::addMessage("Found " . $dir->key() . " in watch dir", 'debug');
                     $announce = array(0 => $torrent_data->getAnnounce());
                     $announce_list = $torrent_data->getAnnounceList();
                     if ($announce[0] == '' && is_array($announce_list)) {
@@ -269,9 +268,17 @@ class RtorrentManager {
         // If info hash is not available for comparison, use torrent filename
         if ($reference['hash'] === '') {
             Log::addMessage('Hash not available for ' . $reference['tied_to_file'], 'debug');
-            return ($reference['tied_to_file'] === $subject['tied_to_file']) ? 0 : 1;
+            if ($reference['tied_to_file'] === $subject['tied_to_file']) {
+                Log::addMessage('Torrent matches loaded torrent ' . $reference['tied_to_file'] . ' based on filename', 'debug');
+                return 0;
+            }
+            // Hash is unavailable and torrent filenames don't match. Return:
+            return ($reference['tied_to_file'] < $subject['tied_to_file']) ? -1 : 1;
         }
-        return ($reference['hash'] === $subject['hash']) ? 0 : 1;
+        if ($reference['hash'] === $subject['hash']) {
+            return 0;
+        }
+        return ($reference['hash'] < $subject['hash']) ? -1 : 1;
     }
 }
 ?>
