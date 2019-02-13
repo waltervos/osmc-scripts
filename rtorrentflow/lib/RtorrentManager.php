@@ -249,6 +249,16 @@ class RtorrentManager {
     private function getCompletedTorrents() {
         if (!$this->completed_torrents) {
             $this->setCompletedTorrents();
+=======
+            // Completed torrents are found in the 'complete' view and not in the 'hashing' view
+            $this->completed_torrents = array_udiff(
+                $this->rtorrent_client->getTorrents('complete'),
+                $this->rtorrent_client->getTorrents('hashing'),
+                array($this, "diffTorrentArrays")
+            );
+            foreach ($this->completed_torrents as $key => $completed_torrent) {
+                $torrent = PHP\BitTorrent\Torrent::createFromTorrentFile($completed_torrent['tied_to_file']);
+            }
         }
         return $this->completed_torrents;
     }
@@ -294,6 +304,21 @@ class RtorrentManager {
                     unset($announce[0]);
                     foreach ($announce_list as $key => $announce_entry) {
                         $announce[$key] = $announce_entry[0];
+=======
+            $dir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->torrent_root));
+            while ($dir->valid()) {
+                if ($dir->isFile()) {
+                    $torrent_data = PHP\BitTorrent\Torrent::createFromTorrentFile($dir->key());
+                    $custom1 = $dir->getSubPath();
+                    $custom2 = isset($this->copy_paths[$dir->getSubPath()]) ? $this->completed_root . $this->copy_paths[$dir->getSubPath()] : 0;
+                    Log::addMessage("Found " . $dir->key() . " in watch dir", 'debug');
+                    $announce = array(0 => $torrent_data->getAnnounce());
+                    $announce_list = $torrent_data->getAnnounceList();
+                    if ($announce[0] == '' && is_array($announce_list)) {
+                        unset($announce[0]);
+                        foreach ($announce_list as $key => $announce_entry) {
+                            $announce[$key] = $announce_entry[0];
+                        }
                     }
                 }
                 $this->torrent_files[] = array(
