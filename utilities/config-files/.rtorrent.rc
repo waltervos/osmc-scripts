@@ -26,19 +26,23 @@ directory = /home/osmc/Temp
 session = /home/osmc/.session
 
 # Custom method to copy the torrent data from base_path to the value set in custom3
-system.method.insert = copy_to_custom3,simple,"execute=cp,-avr,$d.base_path=,$d.custom3="
+#system.method.insert = copy_to_custom3,simple,"execute=cp,-avr,$d.base_path=,$d.custom3="
 
 # Custom method to move the torrent data from base_path to the value set in custom2 and change the directory accordingly
-system.method.insert = move_to_custom2,simple,"d.directory.set=$d.custom2=;execute=mv,-u,$d.base_path=,$d.custom2="
+#system.method.insert = move_to_custom2,simple,"d.directory.set=$d.custom2=;execute=mv,-u,$d.base_path=,$d.custom2="
 
 # On completion, copy the data to custom3 (if set) and move the torrent to the directory from custom2
 #system.method.set_key =event.download.finished,move_copy_complete,"branch=d.custom3=,copy_to_custom3= ;move_to_custom2="
 
 # Old move to custom2 rule
-system.method.set_key =event.download.finished,move_complete,"d.directory.set=$d.custom2= ;execute=mv,-u,$d.base_path=,$d.custom2="
+#system.method.set_key =event.download.finished,move_complete,"d.directory.set=$d.custom2= ;execute=mv,-u,$d.base_path=,$d.custom2="
 
 # Store time when torrent is loaded into rTorrent in a custom field
-system.method.set_key = event.download.inserted_new, loaded_time, "d.custom.set=tm_loaded,$cat=$system.time="
+#system.method.set_key = event.download.inserted_new, loaded_time, "d.custom.set=tm_loaded,$cat=$system.time="
+
+method.insert = d.data_path, simple, "if=(d.is_multi_file), (cat,(d.directory),/), (cat,(d.directory),/,(d.name))"
+method.insert = d.move_to_custom2, simple, "d.directory.set=$argument.1=; execute=mkdir,-p,$argument.1=; execute=mv,-u,$argument.0=,$argument.1=; d.save_full_session="
+method.set_key = event.download.finished,move_complete,"d.move_to_custom2=$d.data_path=,$d.custom2="
 
 # Stop torrents whose .torrent file have been deleted
 schedule = untied_directory,5,5,remove_untied=

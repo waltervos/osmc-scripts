@@ -81,7 +81,6 @@ class RtorrentManager {
             }
             if ($leeching_torrent['d.custom1'] == 'tv-sonarr') {
                 if ($path = $this->sonarr_client->getDestinationForTorrent($leeching_torrent['hash'])) {
-                    $path = $this->completed_root . $path;
                     if ($leeching_torrent['d.custom2'] != $path) {
                         Log::addMessage('Setting destination for ' . $leeching_torrent['tied_to_file'] . ' as ' . $path, 'debug');
                         $this->rtorrent_client->setTorrentAttribute($leeching_torrent['hash'], 'custom2', $path);
