@@ -31,7 +31,7 @@
             }
             foreach ($this->getQueueResult() as $queue_item) {
                 if ($queue_item->downloadId == $hash) {
-                    return $queue_item->series->path;
+                    return "TV Shows/" . $queue_item->series->path;
                 }
             }
             return false;
