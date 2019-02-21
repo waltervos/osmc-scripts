@@ -82,11 +82,11 @@ class RtorrentManager {
             if ($leeching_torrent['d.custom1'] == 'tv-sonarr') {
                 if ($path = $this->sonarr_client->getDestinationForTorrent($leeching_torrent['hash'])) {
                     if ($leeching_torrent['d.custom2'] != $path) {
-                        Log::addMessage('Setting destination for ' . $leeching_torrent['tied_to_file'] . ' as ' . $path, 'debug');
+                        Log::addMessage('Setting destination for ' . $leeching_torrent['hash'] . ' as ' . $path, 'debug');
                         $this->rtorrent_client->setTorrentAttribute($leeching_torrent['hash'], 'custom2', $path);
                     }
                 } else {
-                    Log::addMessage('SonarrClient::getDestinationForTorrent returned false for ' . $leeching_torrent['tied_to_file'], 'debug');
+                    Log::addMessage('SonarrClient::getDestinationForTorrent returned false for ' . $leeching_torrent['hash'], 'debug');
                 }
             }
         }
@@ -111,7 +111,7 @@ class RtorrentManager {
                 $log_suffix = ' and erased';
             }
 
-            Log::addMessage('Completed torrent ' . $completed_torrent['tied_to_file'] . ' was stopped' . $log_suffix . '.', 'info');
+            Log::addMessage('Completed torrent ' . $completed_torrent['hash'] . ' was stopped' . $log_suffix . '.', 'info');
         }
     }
 
@@ -260,9 +260,6 @@ class RtorrentManager {
             $this->rtorrent_client->getTorrents('hashing'),
             array($this, "diffTorrentArrays")
         );
-        foreach ($this->completed_torrents as $key => $completed_torrent) {
-            $torrent = PHP\BitTorrent\Torrent::createFromTorrentFile($completed_torrent['tied_to_file']);
-        }
     }
 
     private function getActiveTorrents() {
