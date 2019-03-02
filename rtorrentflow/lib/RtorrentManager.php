@@ -149,7 +149,6 @@ class RtorrentManager {
                                 'view.set_visible=' . $view
                             ),
                             $this->load_method
-                            )
                         )) { // ... if($this->rtorrent_client->loadTorrent()):
                         Log::addMessage("Torrent " . $queued_torrent['tied_to_file'] . " loaded.", 'info');
                         $i++;
