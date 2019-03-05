@@ -116,13 +116,14 @@ class RtorrentManager {
             if (substr($active_torrent['base_path'], -4) === 'meta') {
                 // Torrents that have a [hash].meta base_path are magnets that haven't downloaded metadata yet. We'll leave those be.
                 Log::addMessage($active_torrent['base_path'] . ' hasn\'t downloaded metadata yet. Not setting throttle on this torrent.', 'verbose');
-                continue;
-            }
-            if (empty($active_torrent['throttle_name'])) {
-                $throttle = ($active_torrent['d.is_private'] === 1) ? 'private_up' : 'public_up';
+            } elseif (empty($active_torrent['throttle_name'])) {
+                $throttle = $active_torrent['d.is_private'] == 1 ? 'private_up' : 'public_up';
+                Log::addMessage($active_torrent['base_path'] . " doesn't have throttle applied yet. Setting throttle $throttle.", 'verbose');
                 $this->rtorrent_client->pauseTorrent($active_torrent['hash']);
                 $this->rtorrent_client->setTorrentAttribute($active_torrent['hash'], 'throttle_name', $throttle);
                 $this->rtorrent_client->resumeTorrent($active_torrent['hash']);
+            } else {
+                continue;
             }
         }
     }
