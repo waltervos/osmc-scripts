@@ -4,6 +4,7 @@ require 'rtorrentflow/ScgiXmlRpcClient.php';
 require 'rtorrentflow/RtorrentClient.php';
 require 'rtorrentflow/SonarrClient.php';
 require 'rtorrentflow/RtorrentManager.php';
+require 'rtorrentflow/Config.php';
 require 'rtorrentflow/Log.php';
 
 require 'rtorrentflow/bittorrent/DecoderInterface.php';
@@ -26,10 +27,7 @@ if ($argc >= 2) {
     }
 }
 
-$erase = false;
-$loglevel = 'quiet';
-
-$rtorrent_manager = new RtorrentManager();
+Config::initialize();
 
 foreach ($args as $arg) {
     if (is_array($arg)) {
@@ -41,42 +39,41 @@ foreach ($args as $arg) {
     }
     switch($option) {
         case 'max_leeching' :
-            $rtorrent_manager->setMaxLeeching($value);
+            Config::setValue('max_leeching', $value);
             break;
         case 'max_active' :
-            $rtorrent_manager->setMaxActive($value);
+            Config::setValue('max_active', $value);
             break;
         case 'torrent_root' :
-            $rtorrent_manager->setTorrentRoot($value);
+            Config::setValue('torrent_root', $value);
             break;
         case 'completed_root' :
-            $rtorrent_manager->setCompletedRoot($value);
+            Config::setValue('completed_root', $value);
             break;
         case 'unix_socket' :
-            $rtorrent_manager->setUnixSocket($value);
+            Config::setValue('unix_socket', $value);
             break;
         case 'erase_completed' :
-            $erase = true;
+            Config::setValue('erase_completed', true);
             break;
         case 'load_only' :
-            $rtorrent_manager->setLoadMethod('load');
+            Config::setValue('load_method', $value);
+            break;
+        case 'log_level' :
+            Config::setValue('log_level', $value);
             break;
         case 'verbose' :
-            $loglevel = 'debug';
-            break;
         case 'info' :
-            $loglevel = 'info';
+            Config::setValue('log_level', $option);
             break;
         default :
             break;
     }
 }
-$rtorrent_manager->closeCompletedTorrents($erase);
-$rtorrent_manager->runQueueManager();
-$rtorrent_manager->throttleActiveTorrents();
-$rtorrent_manager->setDestinationOnSonarrTorrents('771f8491c4474cd4b7bf1a5b0861963e');
 
-if ($loglevel != 'quiet') {
-    Log::printMessages($loglevel);
+$rtorrent_manager = new RtorrentManager();
+
+if (Config::getValue('log_level') != 'quiet') {
+    Log::printMessages(Config::getValue('log_level'));
 }
 ?>
