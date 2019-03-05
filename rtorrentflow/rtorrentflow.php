@@ -57,7 +57,7 @@ foreach ($args as $arg) {
             Config::setValue('erase_completed', true);
             break;
         case 'load_only' :
-            Config::setValue('load_method', $value);
+            Config::setValue('load_method', 'load');
             break;
         case 'log_level' :
             Config::setValue('log_level', $value);
