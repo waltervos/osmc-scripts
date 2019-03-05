@@ -6,8 +6,8 @@
         private $api_key;
         private $queue_result = array();
 
-        public function __construct() {
-
+        public function __construct($api_key) {
+            $this->setApiKey($api_key);
         }
 
         public function getDestinationForTorrent($hash) {
