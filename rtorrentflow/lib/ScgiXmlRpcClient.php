@@ -18,7 +18,7 @@
                     'content' => xmlrpc_decode(utf8_encode($content))
                 );
             } else {
-                Log::addMessage('Cannot connect to rtorrent', 'info');
+                Log::logError('Cannot connect to rtorrent.');
                 exit(0);
             }
         }

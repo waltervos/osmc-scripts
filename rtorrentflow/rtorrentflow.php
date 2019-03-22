@@ -13,6 +13,8 @@ require 'rtorrentflow/bittorrent/EncoderInterface.php';
 require 'rtorrentflow/bittorrent/Encoder.php';
 require 'rtorrentflow/bittorrent/Torrent.php';
 
+Log::logTrace("Running rtorrentflow at %s", date("F j, Y, g:i a"));
+
 $args = array();
 
 if ($argc >= 2) {
@@ -74,6 +76,6 @@ foreach ($args as $arg) {
 $rtorrent_manager = new RtorrentManager();
 
 if (Config::getValue('log_level') != 'quiet') {
-    Log::printMessages(Config::getValue('log_level'));
+    Log::printMessages();
 }
 ?>
