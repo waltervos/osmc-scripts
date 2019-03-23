@@ -2,5 +2,5 @@
 repo_root='/home/osmc/git/osmc-scripts'
 shared_php_root='/usr/share/php'
 
-cp -avr $repo_root/rtorrentflow/rtorrentflow.php /usr/local/bin/
+cp -vr --preserve=mode,ownership $repo_root/rtorrentflow/rtorrentflow.php /usr/local/bin/
 cp -avr $repo_root/rtorrentflow/lib/* $shared_php_root/rtorrentflow/
