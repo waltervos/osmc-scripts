@@ -12,7 +12,7 @@ class Log {
     public static function init() {
     }
 
-    public static function addMessage($content, $level) {
+    private static function addMessage($content, $level) {
         self::$messages[$level][] = array('timestamp' => new DateTime('now'), 'content' => $content);
     }
 
@@ -22,6 +22,7 @@ class Log {
         return vsprintf($format, $parameters);
     }
 
+    // Catches calls to Log::{log_level} and puts them into the appropriate message bank.
     public static function __callStatic($name, $arguments) {
         if (in_array($name, self::$log_levels)) {
             $log_level = $name;
