@@ -47,7 +47,7 @@ class Log {
             if (in_array($level, $applicable_log_levels)) {
                 foreach ($messages as $message) {
                     printf($format, $message['timestamp']->format('d-m-Y H:i:s') , $level, $message['content']);
-                }
+                }   
             }
         }
     }
