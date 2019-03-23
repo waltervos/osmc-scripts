@@ -13,7 +13,7 @@ require 'rtorrentflow/bittorrent/EncoderInterface.php';
 require 'rtorrentflow/bittorrent/Encoder.php';
 require 'rtorrentflow/bittorrent/Torrent.php';
 
-Log::logTrace("Running rtorrentflow at %s", date("F j, Y, g:i a"));
+Log::trace("Running rtorrentflow at %s", date("F j, Y, g:i a"));
 
 $args = array();
 
@@ -64,10 +64,6 @@ foreach ($args as $arg) {
         case 'log_level' :
             Config::setValue('log_level', $value);
             break;
-        case 'verbose' :
-        case 'info' :
-            Config::setValue('log_level', $option);
-            break;
         default :
             break;
     }
@@ -76,6 +72,6 @@ foreach ($args as $arg) {
 $rtorrent_manager = new RtorrentManager();
 
 if (Config::getValue('log_level') != 'quiet') {
-    Log::printMessages();
+    Log::printMessages(Config::getValue('log_level'));
 }
 ?>

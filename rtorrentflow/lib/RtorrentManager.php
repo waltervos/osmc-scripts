@@ -29,17 +29,17 @@ class RtorrentManager {
     private function setDestinationOnSonarrTorrents() {
         foreach ($this->getLeechingTorrents() as $leeching_torrent) {
             if (substr($leeching_torrent['base_path'], -4) === 'meta') {
-                Log::logTrace("Torrent %1s hasn't downloaded metadata yet. Not checking of setting the destination for torrent", $leeching_torrent['base_path']);
+                Log::trace("Torrent %1s hasn't downloaded metadata yet. Not checking of setting the destination for torrent", $leeching_torrent['base_path']);
                 continue;
             }
             if ($leeching_torrent['d.custom1'] == Config::getValue('sonarr_category')) {
                 if ($path = $this->sonarr_client->getDestinationForTorrent($leeching_torrent['hash'])) {
                     if ($leeching_torrent['d.custom2'] != $path) {
-                        Log::logInfo("Setting destination for %1s as %2s", $leeching_torrent['hash'], $path);
+                        Log::info("Setting destination for %1s as %2s", $leeching_torrent['hash'], $path);
                         $this->rtorrent_client->setTorrentAttribute($leeching_torrent['hash'], 'custom2', $path);
                     }
                 } else {
-                    Log::logWarn("SonarrClient::getDestinationForTorrent returned false %1s", $leeching_torrent['hash']);
+                    Log::warn("SonarrClient::getDestinationForTorrent returned false %1s", $leeching_torrent['hash']);
                 }
             }
         }
@@ -62,22 +62,22 @@ class RtorrentManager {
                 $log_suffix = ' and erased.';
             }
 
-            Log::logInfo('Completed torrent %1s was stopped%2s', $completed_torrent['hash'], $log_suffix);
+            Log::info('Completed torrent %1s was stopped%2s', $completed_torrent['hash'], $log_suffix);
         }
     }
 
     private function runQueueManager() {
-        Log::logTrace('Running queue manager.');
+        Log::trace('Running queue manager.');
         
         if ($this->canQueue() && $this->hasQueue()) {
             // How many new torrents can we load?
-            Log::logTrace('%d new torrents can be queued', $this->getQueueBudget());
+            Log::trace('%d new torrents can be queued', $this->getQueueBudget());
 
             // Load the queued torrents, until queueBudget is spent
             $i = 0;
             foreach ($this->getQueuedTorrents() as $queued_torrent) {
                 if ($this->getQueueBudget() === $i) {
-                    Log::logTrace('Queue budget spent, breaking');
+                    Log::trace('Queue budget spent, breaking');
                     break;
                  } else {
                     $throttle = ($queued_torrent['private']) ? 'private_up' : 'public_up';
@@ -86,9 +86,9 @@ class RtorrentManager {
                     if (!is_dir($custom2)) {
                         $dir = mkdir($custom2, 0755);
                         if (!$dir) {
-                            Log::logWarn('Creation of directory %s failed', $custom2);
+                            Log::warn('Creation of directory %s failed', $custom2);
                             break;
-                        } else Log::logInfo('Directory %s created',  $custom2);
+                        } else Log::info('Directory %s created',  $custom2);
                     }
                     if ($this->rtorrent_client->loadTorrent(
                             $queued_torrent['tied_to_file'],
@@ -100,10 +100,10 @@ class RtorrentManager {
                             ),
                             Config::getValue('load_method')
                         )) { // ... if($this->rtorrent_client->loadTorrent()):
-                        Log::logInfo("Torrent %s loaded.", $queued_torrent['tied_to_file']);
+                        Log::info("Torrent %s loaded.", $queued_torrent['tied_to_file']);
                         $i++;
                     } else {
-                        Log::logInfo("Torrent %s could not be loaded.", $queued_torrent['tied_to_file']);
+                        Log::info("Torrent %s could not be loaded.", $queued_torrent['tied_to_file']);
                     }
                 }
             }
@@ -114,10 +114,10 @@ class RtorrentManager {
         foreach ($this->getActiveTorrents() as $active_torrent) {
             if (substr($active_torrent['base_path'], -4) === 'meta') {
                 // Torrents that have a [hash].meta base_path are magnets that haven't downloaded metadata yet. We'll leave those be.
-                Log::logTrace('%s hasn\'t downloaded metadata yet. Not setting throttle on this torrent.', $active_torrent['base_path']);
+                Log::trace('Torrent %s hasn\'t downloaded metadata yet. Not setting throttle on this torrent.', $active_torrent['base_path']);
             } elseif (empty($active_torrent['throttle_name'])) {
                 $throttle = $active_torrent['d.is_private'] == 1 ? 'private_up' : 'public_up';
-                Log::logInfo("%1s doesn't have throttle applied yet. Setting throttle %2s.", $active_torrent['base_path'], $throttle);
+                Log::info("%1s doesn't have throttle applied yet. Setting throttle %2s.", $active_torrent['base_path'], $throttle);
                 $this->rtorrent_client->pauseTorrent($active_torrent['hash']);
                 $this->rtorrent_client->setTorrentAttribute($active_torrent['hash'], 'throttle_name', $throttle);
                 $this->rtorrent_client->resumeTorrent($active_torrent['hash']);
@@ -138,34 +138,34 @@ class RtorrentManager {
     }
 
     private function canQueue() {
-        Log::logTrace('%d torrents are currently active', count($this->getActiveTorrents()));
-        Log::logTrace('Allowed number of active torrents is %d', var_export(Config::getValue('max_active'), true));
+        Log::trace('%d torrents are currently active', count($this->getActiveTorrents()));
+        Log::trace('Allowed number of active torrents is %d', var_export(Config::getValue('max_active'), true));
 
         // Check to see if there's a limit on active torrents or if there's room for more
         if (!Config::getValue('max_active') || (count($this->getActiveTorrents()) < Config::getValue('max_active'))) {
-            Log::logTrace('%d torrents are currently leeching', count($this->getLeechingTorrents()));
-            Log::logTrace('Allowed number of leeching torrents is %d', var_export(Config::getValue('max_leeching'), true));
+            Log::trace('%d torrents are currently leeching', count($this->getLeechingTorrents()));
+            Log::trace('Allowed number of leeching torrents is %d', var_export(Config::getValue('max_leeching'), true));
 
             // Check to see if there's a limit on leeching torrents or if there's room for more
             if (!Config::getValue('max_leeching') || (count($this->getLeechingTorrents()) < Config::getValue('max_leeching'))) {
                 return true;
             }
         }
-        Log::logTrace('No room to queue additional torrents.');
+        Log::trace('No room to queue additional torrents.');
         return false;
     }
 
     private function hasQueue() {
         $this->setTorrentFiles();
-        Log::logTrace('%d torrent files in watch dir', count($this->torrent_files));
+        Log::trace('%d torrent files in watch dir', count($this->torrent_files));
 
         // Get and set the queued torrents
         $this->setQueuedTorrents();
         if (empty($this->getQueuedTorrents())) {
-            Log::logTrace('Torrent queue empty');
+            Log::trace('Torrent queue empty');
             return false;
         }
-        Log::logTrace('%d torrents in queue', count($this->getQueuedTorrents()));
+        Log::trace('%d torrents in queue', count($this->getQueuedTorrents()));
         return true;
     }
 
@@ -274,9 +274,9 @@ class RtorrentManager {
     private function diffTorrentArrays(array $reference, array $subject) {
         // If info hash is not available for comparison, use torrent filename
         if ($reference['hash'] === '') {
-            Log::logTrace('Hash not available for %s', $reference['tied_to_file']);
+            Log::trace('Hash not available for %s', $reference['tied_to_file']);
             if ($reference['tied_to_file'] === $subject['tied_to_file']) {
-                Log::logTrace('Torrent matches loaded torrent %s based on filename', $reference['tied_to_file']);
+                Log::trace('Torrent matches loaded torrent %s based on filename', $reference['tied_to_file']);
                 return 0;
             }
             // Hash is unavailable and torrent filenames don't match. Return:
