@@ -1,6 +1,6 @@
 <?php
     class Config {
-        private static $log_level = 'quiet'; //
+        private static $log_level = 'warn'; //
 
         private static $erase_completed = false; //
 
