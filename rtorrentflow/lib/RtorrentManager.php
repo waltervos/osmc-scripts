@@ -32,7 +32,7 @@ class RtorrentManager {
                 Log::trace("Torrent %1s hasn't downloaded metadata yet. Not checking of setting the destination for torrent", $leeching_torrent['base_path']);
                 continue;
             }
-            if ($leeching_torrent['d.custom1'] == Config::getValue('sonarr_category')) {
+            if ($leeching_torrent['custom1'] == Config::getValue('sonarr_category')) {
                 if ($path = $this->sonarr_client->getDestinationForTorrent($leeching_torrent['hash'])) {
                     if ($leeching_torrent['d.custom2'] != $path) {
                         Log::info("Setting destination for %1s as %2s", $leeching_torrent['hash'], $path);

@@ -24,7 +24,7 @@ class RtorrentClient {
                 break;
             case 'content' :
             default :
-            return $response['content'];
+                return $response['content'];
                 break;
         }
     }
@@ -106,7 +106,7 @@ class RtorrentClient {
             }
             exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
         } else {
-            return $response;
+            return true;
         }
     }
 }
