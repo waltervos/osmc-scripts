@@ -3,10 +3,10 @@ class Log {
     private static $messages = array();
 
     private static $log_levels = array (
-        100 => 'trace',
+        400 => 'trace',
+		300 => 'warn',
         200 => 'info',
-        300 => 'warn',
-        400 => 'error'
+        100 => 'error'
     );
 
     public static function init() {
@@ -38,18 +38,19 @@ class Log {
     }
 
     public static function printMessages($log_level = 'warn') {
-        if ($numeric_log_level = array_search($log_level, self::$log_levels)) {
+		$numeric_log_level = array_search($log_level, self::$log_levels);
+        if ($numeric_log_level) {
             $applicable_log_levels = array_filter(self::$log_levels, function($key) use ($numeric_log_level) {
-                return $key >= $numeric_log_level;
+                return $key <= $numeric_log_level;
             }, ARRAY_FILTER_USE_KEY);
-        }
-        $format = '%1s: [%2s] %3s' . "\n";
-        foreach (self::$messages as $level => $messages) {
-            if (in_array($level, $applicable_log_levels)) {
-                foreach ($messages as $message) {
-                    printf($format, $message['timestamp']->format('d-m-Y H:i:s') , $level, $message['content']);
-                }   
-            }
+			$format = '%1s: [%2s] %3s' . "\n";
+			foreach (self::$messages as $level => $messages) {
+				if (in_array($level, $applicable_log_levels)) {
+					foreach ($messages as $message) {
+						printf($format, $message['timestamp']->format('d-m-Y H:i:s') , $level, $message['content']);
+					}   
+				}
+			}
         }
     }
 }

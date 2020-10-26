@@ -30,7 +30,7 @@ class RtorrentClient {
     }
 
     public function getTorrent($hash) {
-        return $this->rTorrentRequest('d.get_name', array($hash));
+        return $this->rTorrentRequest('d.name', array($hash));
     }
 
     public function setTorrentAttribute($hash, $attribute, $value) {
@@ -38,9 +38,9 @@ class RtorrentClient {
     }
 
     public function getTorrents($view) {
-        $calls = array('d.get_hash=', 'd.get_tied_to_file=', 'd.get_custom1=', 'd.get_custom2=', 'd.get_throttle_name=', 'd.is_private=', 'd.get_base_path=', 'd.custom1=', 'd.custom2=', 'd.custom3=');
-        $args = array_merge((array) $view, $calls);
-        $response = $this->rTorrentRequest('d.multicall', $args);
+        $calls = array('d.hash=', 'd.tied_to_file=', 'd.custom1=', 'd.custom2=', 'd.custom3=', 'd.throttle_name=', 'd.is_private=', 'd.base_path=');
+        $args = array_merge((array) '', (array) $view, $calls);
+        $response = $this->rTorrentRequest('d.multicall2', $args);
         if (isset($response['faultCode'])) {
             exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
         } else {
@@ -77,7 +77,7 @@ class RtorrentClient {
         $return = array();
         foreach ($response as $item_key => $item_value) {
             foreach ($item_value as $key => $value) {
-                $call_key = str_replace(array('d.get_', '='), '', $calls[$key]);
+                $call_key = str_replace(array('d.', 'd.get_', '='), '', $calls[$key]);
                 if ($call_key == 'tied_to_file') {
                     $value = str_replace('//', '/', $value);
                 }
@@ -98,8 +98,16 @@ class RtorrentClient {
         foreach($calls as $key => $call) {
             $calls[$key] = str_replace(' ', '\ ', $call);
         }
-        $response = $this->rTorrentRequest($load_method, array_merge(array($file), $calls), 'bool');
-        return $response;
+        $response = $this->rTorrentRequest($load_method, array_merge((array) '',(array) $file, $calls));
+		if (isset($response['faultCode'])) {
+            if ($response['faultCode'] == "-501") {
+				Log::error($response['faultString']);
+                return false;
+            }
+            exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
+        } else {
+            return $response;
+        }
     }
 }
 ?>
