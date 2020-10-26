@@ -1,6 +1,6 @@
 <?php
     class Config {
-        private static $log_level = 'warn'; //
+        private static $log_level = 'info'; //
 
         private static $erase_completed = false; //
 
@@ -35,7 +35,7 @@
 
         private static $scgi_timeout = 5;
         
-        private static $load_method = 'load_start';
+        private static $load_method = 'load.start';
 
         public function __construct() {}
 
