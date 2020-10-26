@@ -99,9 +99,9 @@ class RtorrentClient {
             $calls[$key] = str_replace(' ', '\ ', $call);
         }
         $response = $this->rTorrentRequest($load_method, array_merge((array) '',(array) $file, $calls));
-		if (isset($response['faultCode'])) {
+        if (isset($response['faultCode'])) {
             if ($response['faultCode'] == "-501") {
-				Log::error($response['faultString']);
+                Log::error($response['faultString']);
                 return false;
             }
             exit('XML-RPC error: "' . $response['faultString'] . '" (' . $response['faultCode'] . ')' . "\n");
