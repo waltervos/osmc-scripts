@@ -34,7 +34,7 @@ class RtorrentManager {
             }
             if ($leeching_torrent['custom1'] == Config::getValue('sonarr_category')) {
                 if ($path = $this->sonarr_client->getDestinationForTorrent($leeching_torrent['hash'])) {
-                    if ($leeching_torrent['d.custom2'] != $path) {
+                    if ($leeching_torrent['custom2'] != $path) {
                         Log::info("Setting destination for %1s as %2s", $leeching_torrent['hash'], $path);
                         $this->rtorrent_client->setTorrentAttribute($leeching_torrent['hash'], 'custom2', $path);
                     }
@@ -116,7 +116,7 @@ class RtorrentManager {
                 // Torrents that have a [hash].meta base_path are magnets that haven't downloaded metadata yet. We'll leave those be.
                 Log::trace('Torrent %s hasn\'t downloaded metadata yet. Not setting throttle on this torrent.', $active_torrent['base_path']);
             } elseif (empty($active_torrent['throttle_name'])) {
-                $throttle = $active_torrent['d.is_private'] == 1 ? 'private_up' : 'public_up';
+                $throttle = $active_torrent['is_private'] == 1 ? 'private_up' : 'public_up';
                 Log::info("%1s doesn't have throttle applied yet. Setting throttle %2s.", $active_torrent['base_path'], $throttle);
                 $this->rtorrent_client->pauseTorrent($active_torrent['hash']);
                 $this->rtorrent_client->setTorrentAttribute($active_torrent['hash'], 'throttle_name', $throttle);
@@ -139,12 +139,12 @@ class RtorrentManager {
 
     private function canQueue() {
         Log::trace('%d torrents are currently active', count($this->getActiveTorrents()));
-        Log::trace('Allowed number of active torrents is %d', var_export(Config::getValue('max_active'), true));
+        Log::trace('Allowed number of active torrents is %d', Config::getValue('max_active'));
 
         // Check to see if there's a limit on active torrents or if there's room for more
         if (!Config::getValue('max_active') || (count($this->getActiveTorrents()) < Config::getValue('max_active'))) {
             Log::trace('%d torrents are currently leeching', count($this->getLeechingTorrents()));
-            Log::trace('Allowed number of leeching torrents is %d', var_export(Config::getValue('max_leeching'), true));
+            Log::trace('Allowed number of leeching torrents is %d', Config::getValue('max_leeching'));
 
             // Check to see if there's a limit on leeching torrents or if there's room for more
             if (!Config::getValue('max_leeching') || (count($this->getLeechingTorrents()) < Config::getValue('max_leeching'))) {
