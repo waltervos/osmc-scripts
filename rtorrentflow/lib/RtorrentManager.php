@@ -139,12 +139,12 @@ class RtorrentManager {
 
     private function canQueue() {
         Log::trace('%d torrents are currently active', count($this->getActiveTorrents()));
-        Log::trace('Allowed number of active torrents is %d', var_export(Config::getValue('max_active'), true));
+        Log::trace('Allowed number of active torrents is %d', Config::getValue('max_active'));
 
         // Check to see if there's a limit on active torrents or if there's room for more
         if (!Config::getValue('max_active') || (count($this->getActiveTorrents()) < Config::getValue('max_active'))) {
             Log::trace('%d torrents are currently leeching', count($this->getLeechingTorrents()));
-            Log::trace('Allowed number of leeching torrents is %d', var_export(Config::getValue('max_leeching'), true));
+            Log::trace('Allowed number of leeching torrents is %d', Config::getValue('max_leeching'));
 
             // Check to see if there's a limit on leeching torrents or if there's room for more
             if (!Config::getValue('max_leeching') || (count($this->getLeechingTorrents()) < Config::getValue('max_leeching'))) {
