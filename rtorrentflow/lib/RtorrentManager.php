@@ -34,7 +34,7 @@ class RtorrentManager {
             }
             if ($leeching_torrent['custom1'] == Config::getValue('sonarr_category')) {
                 if ($path = $this->sonarr_client->getDestinationForTorrent($leeching_torrent['hash'])) {
-                    if ($leeching_torrent['d.custom2'] != $path) {
+                    if ($leeching_torrent['custom2'] != $path) {
                         Log::info("Setting destination for %1s as %2s", $leeching_torrent['hash'], $path);
                         $this->rtorrent_client->setTorrentAttribute($leeching_torrent['hash'], 'custom2', $path);
                     }
@@ -116,7 +116,7 @@ class RtorrentManager {
                 // Torrents that have a [hash].meta base_path are magnets that haven't downloaded metadata yet. We'll leave those be.
                 Log::trace('Torrent %s hasn\'t downloaded metadata yet. Not setting throttle on this torrent.', $active_torrent['base_path']);
             } elseif (empty($active_torrent['throttle_name'])) {
-                $throttle = $active_torrent['d.is_private'] == 1 ? 'private_up' : 'public_up';
+                $throttle = $active_torrent['is_private'] == 1 ? 'private_up' : 'public_up';
                 Log::info("%1s doesn't have throttle applied yet. Setting throttle %2s.", $active_torrent['base_path'], $throttle);
                 $this->rtorrent_client->pauseTorrent($active_torrent['hash']);
                 $this->rtorrent_client->setTorrentAttribute($active_torrent['hash'], 'throttle_name', $throttle);
