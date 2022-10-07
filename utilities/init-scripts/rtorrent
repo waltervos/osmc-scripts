@@ -28,7 +28,7 @@
 
 ## Username to run rtorrent under, make sure you have a .rtorrent.rc in the
 ## home directory of this user!
-USER="pi"
+USER="osmc"
 
 ## Absolute path to the rtorrent binary.
 RTORRENT="/usr/bin/rtorrent"
@@ -44,11 +44,12 @@ SCREEN_NAME="rtorrent"
 PIDFILE="/var/run/rtorrent.pid"
 
 ## Absolute path to rtorrent's XMLRPC socket.
-SOCKET="/home/pi/.run/rtorrent.socket"
+SOCKET="/home/$USER/.run/rtorrent.socket"
 
 ## Check if the socket exists and if it exists delete it.
 delete_socket() {
     if [[ -e $SOCKET ]]; then
+        echo "Removing socket $SOCKET"
         rm -f $SOCKET
     fi
 }
@@ -57,7 +58,7 @@ case "$1" in
     ## Start rtorrent in the background.
     start)
         echo "Starting rtorrent."
-        #delete_socket
+        delete_socket
         start-stop-daemon --start --background --oknodo \
             --pidfile "$PIDFILE" --make-pidfile \
             --chuid $USER \
@@ -77,7 +78,7 @@ case "$1" in
             echo "Error: failed to stop rtorrent process."
             exit 1
         fi
-        #delete_socket
+       #delete_socket
         echo "rtorrent stopped successfully."
         ;;
 
